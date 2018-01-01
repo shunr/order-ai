@@ -1,0 +1,92 @@
+{ 
+    "appetizer": [
+        "egg roll",
+        "spring roll",
+        "sweet and sour fried wonton",
+        "barbecued pork",
+        "ja? do chicken wings",
+        "chicken rice soup",
+        "chicken noodle soup",
+        "chicken egg drop soup",
+        "wonton soup",
+        "hot and sour soup"
+    ],
+    "chop_suey": [
+        "vegetable chop suey",
+        "barbecued pork chop suey",
+        "chicken chop suey",
+        "beef chop suey",
+        "shrimp chop suey"
+    ],
+    "satay_dish": [
+        "satay chicken",
+        "satay beef",
+        "satay pork",
+        "satay shrimp"
+    ],
+    "curry_dish": [
+        "curry chicken",
+        "curry beef",
+        "curry shrimp",
+        "curry sauce"
+    ],
+    "szechuan_dish": [
+        "szechuan pork",
+        "szechuan chicken",
+        "szechuan beef",
+        "szechuan shrimp"
+    ],
+    "special_selection": [
+        "rainbow beef",
+        "salt and garlic pork",
+        "black pepper streak",
+        "hunan beef",
+        "imperial ribs",
+        "malayan chicken",
+        "tai dop voy",
+        "noodle malayan",
+        "cantonese chow mein",
+        "singapore chow mein",
+        "beef rice noodle",
+        "seafood chow mein",
+        "oriental chow mein",
+        "kam yin chow mein"
+    ],
+    "sweet_and_sour": [
+        "sweet and sour chicken ball",
+        "sweet and sour pork",
+        "sweet and sour breaded shrimp",
+        "sweet and sour sauce"
+    ],
+    "cantonese_style_lo_mein": [
+        "satay lo mein",
+        "vegetable lo mein",  
+        "chicken lo mein",
+        "beef lo mein",
+        "barbecued pork lo mein",
+        "shrimp lo mein",
+        "special lo mein"
+    ],
+    "honey_garlic_dish": [
+        "honey garlic rib",
+        "honey garlic chicken wing",
+        "honey garlic breaded chicken balls",
+        "honey garlic sauce"
+    ],
+    "oriental_style_egg_dish": [
+        "mushroom egg foo young",
+        "chicken egg foo young",
+        "beef egg foo young",
+        "barbecued pork foo young",
+        "shrimp egg foo young",
+        "special egg foo young"
+    ],
+    "tofu_dish": [
+        "tofu with oyster sauce",
+        "tofu in meaty black bean sauce",
+        "hongshao tofu",
+        "chicken with fried tofu",
+        "beef with fried tofu",
+        "barbecue pork with fried tofu"
+    ]
+}
