@@ -4,7 +4,7 @@ wget http://www.pjsip.org/release/2.7.1/pjproject-2.7.1.tar.bz2
 bzip2 -d pjproject-2.7.1.tar.bz2
 tar xvf pjproject-2.7.1.tar
 cd pjproject-2.7.1/
-./configure CFLAGS=-fPIC -prefix=${HOME}/pjsip/pj-2.7.1/
+./configure CFLAGS=-fPIC -prefix=${HOME}/pjsip/pj-2.7.1/ --disable-sdl --disable-ffmpeg --disable-v412 --disable-openh264 --disable-libwebrtc
 make dep
 make
 sudo make install

@@ -7,14 +7,15 @@ sipster.init();
 var transport = new sipster.Transport({ port: 5060 });
 
 var acct = new sipster.Account({
-  idUri: 'sip:oai@sip.onsip.com',
-    regConfig: {
-    registrarUri: 'sip:sip.onsip.com'
+  idUri: 'sip:hello@oai.onsip.com',
+  regConfig: {
+    registrarUri: 'sip:sip.onsip.com',
+    timeoutSec: 300
   },
   sipConfig: {
     authCreds: [{
       scheme: 'digest',
-      realm: '*',
+      realm: 'jnctn.net',
       username: 'oai',
       dataType: 0, // plain text password
       data: 'DEHymhuGnGopqbSS'
