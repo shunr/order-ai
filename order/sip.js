@@ -7,19 +7,21 @@ sipster.init();
 var transport = new sipster.Transport({ port: 5060 });
 
 var acct = new sipster.Account({
-  idUri: 'sip:hello@oai.onsip.com',
+  //idUri: 'sip:hello@192.168.0.24'
+  idUri: 'sip:oai@sip2sip.info',
   regConfig: {
-    registrarUri: 'sip:sip.onsip.com',
+    registrarUri: 'sip:sip2sip.info',
     timeoutSec: 300
   },
   sipConfig: {
     authCreds: [{
       scheme: 'digest',
-      realm: 'jnctn.net',
+      realm: '*',
       username: 'oai',
       dataType: 0, // plain text password
-      data: 'DEHymhuGnGopqbSS'
-    }]
+      data: 'negro420'
+    }],
+    proxies: ['sip:proxy.sipthor.net']
   }
 });
 
@@ -40,12 +42,12 @@ acct.on('call', function(info, call) {
   // audio stream(s) available
   call.on('media', function(medias) {
     // play looping .wav file to the first audio stream
-    var player = sipster.createPlayer('sound.wav');
+    var player = sipster.createPlayer('./order/sound.wav');
     player.startTransmitTo(medias[0]);
 
     // record the audio of the other side, this will not include the audio from
     // the player above.
-    var recorder = sipster.createRecorder('call.wav');
+    var recorder = sipster.createRecorder('./call.wav');
     medias[0].startTransmitTo(recorder);
     // to include the player audio, you can mix the sources together simply
     // by transmitting to the same recorder:
