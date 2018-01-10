@@ -32,7 +32,7 @@ let mod = module.exports = {};
 
 let recordingTimeout;
 
-function createSpeechStream() {
+mod.createSpeechStream = () => {
   let stream = speech.streamingRecognize(request)
     .on('error', console.error)
     .on('finish', function () {
