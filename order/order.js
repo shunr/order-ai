@@ -45,7 +45,7 @@ let callbacks = {
     setTimeout(() => {
       medias[0].stopTransmitTo(recorder);
       createSpeechStream('./call.wav')
-      medias[0].close();
+      recorder.close();
     }, 5000);
   }
 };
