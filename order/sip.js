@@ -33,7 +33,7 @@ mod.init = (callbacks) => {
 function listen(acct, callbacks) {
   acct.on('call', function(info, call) {
     console.log('=== Incoming call from ' + info.remoteContact);
-    for (event in callbacks) {
+    for (let event in callbacks) {
       call.on(event, callbacks[event]);
     }
     call.answer();
