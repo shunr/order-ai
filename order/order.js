@@ -2,21 +2,21 @@
 
 const speech = require('@google-cloud/speech');
 const record = require('node-record-lpcm16');
+const sipster = require('sipster');
 
 const nlp = require('./nlp');
 const setup = require('./setup');
 const menu = require('./menu_parser');
 const sip = require('./sip');
 
-const request = {
-  config: {
-    encoding: 'LINEAR16',
-    sampleRateHertz: 16000,
-    languageCode: 'en-US',
-    maxAlternatives: 1,
-    speechContexts: [menu.generateSpeechContext()],
-  },
-  interimResults: false
+const client = new speech.SpeechClient();
+
+const config = {
+  encoding: 'LINEAR16',
+  sampleRateHertz: 16000,
+  languageCode: 'en-US',
+  maxAlternatives: 1,
+  speechContexts: [menu.generateSpeechContext()],
 };
 
 const recordConfig = {
@@ -28,17 +28,41 @@ const recordConfig = {
   silence: '5.0'
 };
 
+let callbacks = {
+  state: (state) => {
+    console.log('=== Call state is now: ' + state.toUpperCase());
+  },
+  dtmf: (digit) => {
+    console.log('=== DTMF digit received: ' + digit);
+  },
+  media: (medias) => {
+    var player = sipster.createPlayer('./order/sound.wav', false);
+    player.startTransmitTo(medias[0]);
+    var recorder = sipster.createRecorder('./call.wav');
+    medias[0].startTransmitTo(recorder);
+    setTimeout(() => {
+      medias[0].stopTransmitTo(recorder);
+      createSpeechStream('./call.wav')
+      medias[0].close();
+    }, 5000);
+  }
+};
+
 let mod = module.exports = {};
 
 let recordingTimeout;
 
-mod.createSpeechStream = () => {
-  let stream = speech.streamingRecognize(request)
-    .on('error', console.error)
-    .on('finish', function () {
-      console.log("Finish speech stream");
-    })
-    .on('data', function (data) {
+mod.createSpeechStream = (filename) => {
+  const audio = {
+    content: fs.readFileSync(filename).toString('base64'),
+  };
+  const request = {
+    config: config,
+    audio: audio,
+  };
+  let stream = client.recognize(request)
+    .then((data) => {
+      console.log(data);
       if (data.results[0] && data.results[0].alternatives[0]) {
         console.log(data.results[0].alternatives[0].transcript);
         nlp.processText(data.results[0].alternatives[0].transcript);
@@ -46,17 +70,16 @@ mod.createSpeechStream = () => {
         record.stop();
       }
     });
-  return stream;
 }
 
 mod.init = () => {
-  //setup.initEntities();
+  setup.initEntities();
   //recordSegment();
-  //sip.init();
+  sip.init(callbacks);
   console.log('Listening, press Ctrl+C to stop.');
 }
 
-function recordSegment() {
+/*function recordSegment() {
   record.start(recordConfig)
     .on('error', console.error)
     .on('finish', function () {
@@ -67,4 +90,4 @@ function recordSegment() {
   recordingTimeout = setTimeout(function () {
     record.stop();
   }, 60 * 1000);
-}
+}*/

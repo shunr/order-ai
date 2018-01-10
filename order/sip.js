@@ -1,63 +1,40 @@
-var sipster = require('sipster');
+const sipster = require('sipster');
 
-// initialize pjsip
-sipster.init();
+let mod = module.exports = {};
 
-// set up a transport to listen for incoming connections, defaults to UDP
-var transport = new sipster.Transport({ port: 5060 });
-
-var acct = new sipster.Account({
-  //idUri: 'sip:hello@192.168.0.24'
-  idUri: 'sip:oai@sip2sip.info',
-  regConfig: {
-    registrarUri: 'sip:sip2sip.info',
-    timeoutSec: 300,
-    proxyUse: 2
-  },
-  sipConfig: {
-    authCreds: [{
-      scheme: 'digest',
-      realm: '*',
-      username: 'oai',
-      dataType: 0, // plain text password
-      data: 'negro420'
-    }],
-    proxies: ['sip:proxy.sipthor.net']
-  }
-});
-
-// watch for incoming calls
-acct.on('call', function(info, call) {
-  console.log('=== Incoming call from ' + info.remoteContact);
-
-  // watch for call state changes
-  call.on('state', function(state) {
-    console.log('=== Call state is now: ' + state.toUpperCase());
+mod.init = (callbacks) => {
+  sipster.init();
+  let transport = new sipster.Transport({ port: 5060 });
+  let acct = new sipster.Account({
+    idUri: 'sip:oai@sip2sip.info',
+    regConfig: {
+      registrarUri: 'sip:sip2sip.info',
+      timeoutSec: 300,
+      proxyUse: 2
+    },
+    sipConfig: {
+      authCreds: [{
+        scheme: 'digest',
+        realm: '*',
+        username: 'oai',
+        dataType: 0, // plain text password
+        data: 'negro420'
+      }],
+      proxies: ['sip:proxy.sipthor.net']
+    }
   });
+  listen(acct, callbacks);
+  sipster.start();
+}
 
-  // listen for DTMF digits
-  call.on('dtmf', function(digit) {
-    console.log('=== DTMF digit received: ' + digit);
+
+function listen(acct, callbacks) {
+  acct.on('call', function(info, call) {
+    console.log('=== Incoming call from ' + info.remoteContact);
+    for (event in callbacks) {
+      call.on(event, callbacks[event]);
+    }
+    call.answer();
   });
+}
 
-  // audio stream(s) available
-  call.on('media', function(medias) {
-    // play looping .wav file to the first audio stream
-    var player = sipster.createPlayer('./order/sound.wav');
-    player.startTransmitTo(medias[0]);
-
-    // record the audio of the other side, this will not include the audio from
-    // the player above.
-    var recorder = sipster.createRecorder('./call.wav');
-    medias[0].startTransmitTo(recorder);
-    // to include the player audio, you can mix the sources together simply
-    // by transmitting to the same recorder:
-    //   player.startTransmitTo(recorder);
-  });
-
-  // answer the call (with default 200 OK)
-  call.answer();
-});
-
-// finalize the pjsip initialization phase ...
-sipster.start();
