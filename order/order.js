@@ -13,7 +13,7 @@ const sip = require('./sip');
 const client = new speech.SpeechClient();
 
 const config = {
-  encoding: 'LINEAR16',
+  encoding: 'MULAW',
   sampleRateHertz: 16000,
   languageCode: 'en-US',
   maxAlternatives: 1,
@@ -55,7 +55,7 @@ let mod = module.exports = {};
 let recordingTimeout;
 
 function createSpeechStream(filename) {
-  console.log("processing");
+  console.log("Processing");
   const audio = {
     content: fs.readFileSync(filename).toString('base64'),
   };
@@ -65,12 +65,12 @@ function createSpeechStream(filename) {
   };
   let stream = client.recognize(request)
     .then((data) => {
-      console.log(data);
-      if (data.results[0] && data.results[0].alternatives[0]) {
-        console.log(data.results[0].alternatives[0].transcript);
-        nlp.processText(data.results[0].alternatives[0].transcript);
+      console.log(data[0]);
+      if (data[0].results[0] && data[0].results[0].alternatives[0]) {
+        console.log(data[0].results[0].alternatives[0].transcript);
+        nlp.processText(data[0].results[0].alternatives[0].transcript);
       } else {
-        record.stop();
+        //record.stop();
       }
     });
 }
