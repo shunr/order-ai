@@ -1,3 +1,5 @@
+'use strict';
+
 const sipster = require('sipster');
 
 let mod = module.exports = {};

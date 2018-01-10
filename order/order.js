@@ -3,6 +3,7 @@
 const speech = require('@google-cloud/speech');
 const record = require('node-record-lpcm16');
 const sipster = require('sipster');
+const fs = require('fs');
 
 const nlp = require('./nlp');
 const setup = require('./setup');
@@ -52,7 +53,7 @@ let mod = module.exports = {};
 
 let recordingTimeout;
 
-mod.createSpeechStream = (filename) => {
+function createSpeechStream(filename) {
   const audio = {
     content: fs.readFileSync(filename).toString('base64'),
   };
