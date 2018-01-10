@@ -37,9 +37,10 @@ let callbacks = {
     console.log('=== DTMF digit received: ' + digit);
   },
   media: (medias) => {
-    var player = sipster.createPlayer('./order/sound.wav', false);
+    console.log("Media");
+    let player = sipster.createPlayer('./order/sound.wav', true);
     player.startTransmitTo(medias[0]);
-    var recorder = sipster.createRecorder('./call.wav');
+    let recorder = sipster.createRecorder('./call.wav');
     medias[0].startTransmitTo(recorder);
     setTimeout(() => {
       medias[0].stopTransmitTo(recorder);
