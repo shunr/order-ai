@@ -44,9 +44,9 @@ let callbacks = {
     medias[0].startTransmitTo(recorder);
     setTimeout(() => {
       medias[0].stopTransmitTo(recorder);
-      createSpeechStream('./call.wav')
       recorder.close();
-    }, 5000);
+      createSpeechStream('./call.wav');
+    }, 6000);
   }
 };
 
@@ -55,6 +55,7 @@ let mod = module.exports = {};
 let recordingTimeout;
 
 function createSpeechStream(filename) {
+  console.log("processing");
   const audio = {
     content: fs.readFileSync(filename).toString('base64'),
   };
