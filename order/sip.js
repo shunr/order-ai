@@ -11,7 +11,8 @@ var acct = new sipster.Account({
   idUri: 'sip:oai@sip2sip.info',
   regConfig: {
     registrarUri: 'sip:sip2sip.info',
-    timeoutSec: 300
+    timeoutSec: 300,
+    proxyUse: 2
   },
   sipConfig: {
     authCreds: [{
