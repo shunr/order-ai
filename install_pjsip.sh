@@ -1,12 +1,9 @@
-mkdir ${HOME}/pjsip/
-cd ${HOME}/pjsip/
+sudo rm -fr pjproject-2.7.1
 wget http://www.pjsip.org/release/2.7.1/pjproject-2.7.1.tar.bz2
-bzip2 -d pjproject-2.7.1.tar.bz2
-tar xvf pjproject-2.7.1.tar
-cd pjproject-2.7.1/
-./configure CFLAGS=-fPIC -prefix=${HOME}/pjsip/pj-2.7.1/ --disable-sdl --disable-ffmpeg --disable-v412 --disable-openh264 --disable-libwebrtc
-make dep
-make
+tar -xf pjproject-2.7.1.tar.bz2 && rm pjproject-2.7.1.tar.bz2 && cd pjproject-2.7.1/
+export CFLAGS="$CFLAGS -fPIC"
+./aconfigure --disable-sdl --disable-ffmpeg --disable-v412 --disable-openh264 --disable-libwebrtc && make dep && make
 sudo make install
-cd ..
-export PKG_CONFIG_PATH=${HOME}/pjsip/pj-2.7.1/lib/pkgconfig/;  npm install sipster
+cd pjsip-apps/src/python/
+sudo python setup.py install
+cd ~/

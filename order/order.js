@@ -1,7 +1,6 @@
 'use strict';
 
 const speech = require('@google-cloud/speech');
-const record = require('node-record-lpcm16');
 const sipster = require('sipster');
 const fs = require('fs');
 
@@ -18,15 +17,6 @@ const config = {
   languageCode: 'en-US',
   maxAlternatives: 1,
   speechContexts: [menu.generateSpeechContext()],
-};
-
-const recordConfig = {
-  sampleRateHertz: 16000,
-  threshold: 0.2,
-  // Other options, see https://www.npmjs.com/package/node-record-lpcm16#options
-  verbose: false,
-  recordProgram: 'rec',
-  silence: '5.0'
 };
 
 let callbacks = {
@@ -70,27 +60,13 @@ function createSpeechStream(filename) {
         console.log(data[0].results[0].alternatives[0].transcript);
         nlp.processText(data[0].results[0].alternatives[0].transcript);
       } else {
-        //record.stop();
+        // Didn't recognize
       }
     });
 }
 
 mod.init = () => {
   setup.initEntities();
-  //recordSegment();
   sip.init(callbacks);
   console.log('Listening, press Ctrl+C to stop.');
 }
-
-/*function recordSegment() {
-  record.start(recordConfig)
-    .on('error', console.error)
-    .on('finish', function () {
-      console.log('Done recording');
-      clearTimeout(recordingTimeout);
-    }).pipe(createSpeechStream());
-  clearTimeout(recordingTimeout);
-  recordingTimeout = setTimeout(function () {
-    record.stop();
-  }, 60 * 1000);
-}*/

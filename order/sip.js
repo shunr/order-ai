@@ -5,7 +5,7 @@ const sipster = require('sipster');
 let mod = module.exports = {};
 
 mod.init = (callbacks) => {
-  sipster.init({logConfig: {consoleLevel: 0}});
+  sipster.init({logConfig: {consoleLevel: 10}});
   let transport = new sipster.Transport({ port: 5060 });
   let acct = new sipster.Account({
     idUri: 'sip:oai@sip2sip.info',
@@ -22,7 +22,8 @@ mod.init = (callbacks) => {
         dataType: 0, // plain text password
         data: 'negro420'
       }],
-      proxies: ['sip:proxy.sipthor.net']
+      proxies: ['sip:proxy.sipthor.net'],
+      transport: transport
     }
   });
   listen(acct, callbacks);
