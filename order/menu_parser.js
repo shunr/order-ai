@@ -8,7 +8,8 @@ mod.generateEntities = () => {
     let entities = [];
     let parent = {
         name: 'menu_item',
-        entries: []
+        entries: [],
+        isEnum: true,
     }
     for (let category in menu) {
         parent.entries.push(newEntry('@' + category, false));
@@ -28,7 +29,7 @@ mod.generateEntities = () => {
 
 mod.generateSpeechContext = () => {
     let context = {
-        phrases: []
+        phrases: ['one', 'two', 'three', 'four', 'five', 'six']
     };
     for (let category in menu) {
         for (let i = 0; i < menu[category].length; i++) {
@@ -40,10 +41,13 @@ mod.generateSpeechContext = () => {
 }
 
 function newEntry(value, useSynonyms) {
-    return {
-        value: value,
-        synonyms: (useSynonyms) ? getSynonyms(value) : [value]
+    let entry = {
+      value: value
     }
+    if (useSynonyms) {
+      entry.synonyms = getSynonyms(value);
+    }
+    return entry;
 }
 
 function getSynonyms(name) {

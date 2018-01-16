@@ -1,4 +1,5 @@
 pjproject-2.7.1/
+credentials/
 # Logs
 logs
 *.log
