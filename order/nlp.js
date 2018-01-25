@@ -37,8 +37,11 @@ mod.analyzeSpeech = (filename) => {
   let p = new Promise((resolve, reject) => {
     const detectStream = sessionClient
       .streamingDetectIntent()
-      .on('error', reject)
-      .on('data', data => {
+      .on('error', (err) => {
+        detectStream.destroy();
+        reject(err);
+      })
+      .on('data', (data) => {
         if (data.queryResult) {
           console.log(data.queryResult.queryText);
           console.log(data.queryResult.parameters);
@@ -51,7 +54,12 @@ mod.analyzeSpeech = (filename) => {
         }
       });
     detectStream.write(initialStreamRequest);
-    pump(ts.createReadStream(filename),
+    pump(ts.createReadStream(filename, {
+        beginAt: 0,
+        detectTruncate: true,
+        onTruncate: 'end',
+        endOnError: true
+      }),
       through2.obj((obj, _, next) => {
         next(null, {
           inputAudio: obj
@@ -62,24 +70,27 @@ mod.analyzeSpeech = (filename) => {
   return p;
 }
 
-function tts(order) {
-  let filename = '/tmp/test.wav';
-  let sentence = 'You ordered';
-  for (let i = 0; i < order.order_item.length; i++) {
-    let item = order.order_item[i];
-    if ('amount' in item) {
-      sentence += ' ' + item.amount + ' ' + item.menu_item;
-    } else {
-      sentence += ' 1 ' + item.menu_item;
+mod.orderToString = (order) => {
+  let sentence = '';
+  for (let i = 0; i < order.length; i++) {
+    let item = order[i];
+    sentence += ' ' + item.amount + ' ' + item.name;
+    if (order.length > 1 && i == order.length - 2) {
+      sentence += ' and';
     }
   }
-  let p = new Promise((resolve, reject) => {
-    exec('espeak -w ' + filename + ' "' + sentence + '"').then(() => {
-      console.log(filename);
+  return sentence;
+};
+
+mod.tts = (sentence) => {
+  let filename = '/tmp/' + uuid() + '.wav';
+  let p = new Promise((resolve) => {
+    exec('pico2wave -w=' + filename + ' "' + sentence + '" treble 24').then(() => {
       resolve(filename);
     }).catch((err) => {
-      console.log(err);
+      console.error(err);
+      resolve(null);
     });
   });
   return p;
-}
+};

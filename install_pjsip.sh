@@ -1,3 +1,4 @@
+sudo apt-get install libttspico0 libttspico-utils libttspico-data
 sudo rm -fr pjproject-2.7.1
 wget http://www.pjsip.org/release/2.7.1/pjproject-2.7.1.tar.bz2
 tar -xf pjproject-2.7.1.tar.bz2 && rm pjproject-2.7.1.tar.bz2 && cd pjproject-2.7.1/
