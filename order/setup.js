@@ -5,6 +5,7 @@ const menu = require('./menu_parser');
 const credentials = require('../credentials/credentials.json');
 
 const APIAI_ENDPOINT = 'https://api.api.ai/v1';
+
 let mod = module.exports = {};
 
 const auth = {

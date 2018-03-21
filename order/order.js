@@ -21,11 +21,13 @@ mod.init = () => {
 
 function listen(info, call) {
   console.log('=== Incoming call from ' + info.remoteContact);
+  console.log(info);
   let filename = '/tmp/' + uuid() + '.wav';
   
   call.on('media', async (medias) => {
     const stream = medias[0];
     let items = [];
+    await timeout(1000);
     sendTTS('May I take your order?', stream);
     while (true) {
       let add = await getResponse(parseOrder, filename, stream);
@@ -49,7 +51,8 @@ function listen(info, call) {
     sendTTS('Great! Order will be ready in 10 minutes. Goodbye!', stream);
     let order = {
       items: items,
-      contact: info.remoteContact
+      contact: info.remoteContact,
+      total: 0
     }
     console.log(order);
     server.broadcast(order);

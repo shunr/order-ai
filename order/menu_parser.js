@@ -28,16 +28,14 @@ mod.generateEntities = () => {
 }
 
 mod.generateSpeechContext = () => {
-    let context = {
-        phrases: ['one', 'two', 'three', 'four', 'five', 'six']
-    };
+    let phrases =  ['one', 'two', 'three', 'four', 'five', 'six'];
     for (let category in menu) {
         for (let i = 0; i < menu[category].length; i++) {
             let item = menu[category][i];
-            context.phrases.push(item);
+            phrases.push(item);
         }
     }
-    return context;
+    return phrases;
 }
 
 function newEntry(value, useSynonyms) {

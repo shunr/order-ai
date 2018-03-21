@@ -5,8 +5,15 @@ const sipster = require('sipster');
 let mod = module.exports = {};
 
 mod.init = (callback) => {
-  sipster.init({logConfig: {consoleLevel: 0}});
-  let transport = new sipster.Transport({ port: 10908 });
+  sipster.init({
+    logConfig: {
+      consoleLevel: 0
+    }
+  });
+  let transport = new sipster.Transport({
+    port: parseInt(process.env.SIP_PORT),
+    portRange: parseInt(process.env.SIP_PORTRANGE)
+  });
   let acct = new sipster.Account({
     idUri: 'sip:localhost',
   });
@@ -15,6 +22,3 @@ mod.init = (callback) => {
   });
   sipster.start();
 }
-
-
-

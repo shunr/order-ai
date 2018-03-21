@@ -15,11 +15,11 @@ const sessionClient = new dialogflow.SessionsClient();
 const sessionPath = sessionClient.sessionPath('order-ai', uuid());
 
 const audioConfig = {
-  //encoding: 'MULAW',
+  audioEncoding: 'AUDIO_ENCODING_MULAW',
   sampleRateHertz: 16000,
   languageCode: 'en-US',
   maxAlternatives: 1,
-  speechContexts: [menu.generateSpeechContext()],
+  phraseHints: menu.generateSpeechContext(),
 };
 
 const initialStreamRequest = {
@@ -85,7 +85,7 @@ mod.orderToString = (order) => {
 mod.tts = (sentence) => {
   let filename = '/tmp/' + uuid() + '.wav';
   let p = new Promise((resolve) => {
-    exec('pico2wave -w=' + filename + ' "' + sentence + '" treble 24').then(() => {
+    exec('espeak "' + sentence + '" -w ' + filename).then(() => {
       resolve(filename);
     }).catch((err) => {
       console.error(err);
