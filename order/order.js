@@ -6,6 +6,7 @@ const uuid = require('uuid/v4');
 
 const nlp = require('./nlp');
 const setup = require('./setup');
+const dfintent = require('./dfintent');
 const sip = require('./sip');
 const server = require('./server');
 
@@ -16,7 +17,6 @@ let mod = module.exports = {};
 mod.init = () => {
   setup.initEntities();
   sip.init(listen);
-  console.log('Listening, press Ctrl+C to stop.');
 }
 
 function listen(info, call) {
@@ -27,28 +27,25 @@ function listen(info, call) {
   call.on('media', async (medias) => {
     const stream = medias[0];
     let items = [];
-    await timeout(1000);
+    
     sendTTS('May I take your order?', stream);
     while (true) {
-      let add = await getResponse(parseOrder, filename, stream);
-      sendTTS('You want' + nlp.orderToString(add) + ', is that correct?', stream);
-      await timeout(3000);
-      let confirm = await getResponse(parseConfirmation, filename, stream);
+      let add = await getResponse(filename, stream, dfintent.intents.NEW);
+      await sendTTS('You want to add ' + nlp.orderToString(add) + ', is that correct?', stream);
+      let confirm = await getResponse(filename, stream, dfintent.intents.CONFIRM);
       if (!confirm) {
-        sendTTS('Ok! What would you like instead?', stream);
+        await sendTTS('Okay! What would you like instead?', stream);
         continue;
       }
       items.push(...add);
-      sendTTS('Your order is now' + nlp.orderToString(items) + '. Anything else?', stream);
-      await timeout(3000);
-      let more = await getResponse(parseConfirmation, filename, stream);
-      if (!more) {
+      await sendTTS('Your order is now' + nlp.orderToString(items) + '. Is that all?', stream);
+      let more = await getResponse(filename, stream, dfintent.intents.CONFIRM);
+      if (more) {
         break;
       } else {
-        sendTTS('Sure! What will it be?', stream);
+        await sendTTS('Sure! What else would you like?', stream);
       }
     }
-    sendTTS('Great! Order will be ready in 10 minutes. Goodbye!', stream);
     let order = {
       items: items,
       contact: info.remoteContact,
@@ -56,7 +53,8 @@ function listen(info, call) {
     }
     console.log(order);
     server.broadcast(order);
-    await timeout(5000);
+    await sendTTS('Great! Order will be ready in 10 minutes. Goodbye!', stream);
+    await timeout(1000);
     call.hangup();
   });
   
@@ -69,23 +67,34 @@ function listen(info, call) {
   call.answer();
 }
 
-function getResponse(parser, callFile, stream) {
+function getResponse(callFile, stream, ...intents) {
   let p = new Promise(async (resolve) => {
     let response = null;
     while (response == null) {
       let recorder = sipster.createRecorder(callFile);
+      let error = null;
       stream.startTransmitTo(recorder);
       try {
-        let parameters = await nlp.analyzeSpeech(callFile);
-        response = parser(parameters);
-      } catch (e) {
-        console.error(e);
+        let [intent, parameters] = await nlp.analyzeSpeech(callFile);
+        console.log(intent);
+        if (intents.includes(intent)) {
+          response = (intents.includes(intent)) ? dfintent.parsers[intent](parameters) : null;
+        } else {
+          response = null;
+        }
+      } catch (err) {
+        console.error(err);
+        //TODO: prompt if response null but no nlp error
+        error = err;
       }
       stream.stopTransmitTo(recorder);
       recorder.close();
       if (response == null) {
-        sendTTS('I didn\'t get that', stream);
-        await timeout(1000);
+        if (error == nlp.error.NO_INTENT) {
+          await endTTS('Sorry, could you repeat that?', stream);
+        } else {
+          await sendTTS('I didn\'t get your order. Please try again.', stream);
+        }
       }
     }
     resolve(response);
@@ -93,50 +102,31 @@ function getResponse(parser, callFile, stream) {
   return p;
 }
 
-function parseOrder(parameters) {
-  let order = [];
-  try {
-    let values = parameters.fields.orderItem.listValue.values;
-    for (let i = 0; i < values.length; i++) {
-      let fields = values[i].structValue.fields;
-      let item = {
-        name: fields.menu_item.stringValue,
-        amount: (fields.amount != null) ? fields.amount.numberValue : 1
-      };
-      order.push(item);
+function processIntent(intent, parameters, intents) {
+  if (!intents.includes(intent)) return null;
+  return dfintent.parsers[intent];
+}
+
+function sendTTS(text, stream) {
+  let p = new Promise(async (resolve) => {
+    let filename = await nlp.tts(text);
+    if (filename) {
+      sendAudio(filename, stream, resolve);
     }
-  } catch (error) {
-    console.error('Could not parse order');
-  }
-  console.log(order);
-  return (order.length > 0) ? order : null;
-}
-
-function parseConfirmation(parameters) {
-  let confirmed = false;
-  try {
-    confirmed = parameters.fields.confirmation.stringValue == 'yes';
-  } catch (error) {
-    console.error('Could not parse confirmation');
-  }
-  return confirmed;
-}
-
-async function sendTTS(text, stream) {
-  let filename = await nlp.tts(text);
-  if (filename) {
-    sendAudio(filename, stream);
-    deleteFile(filename);
-  }
+  });
+  return p;
 }
 
 async function deleteFile(filename) {
-  await timeout(10000);
   fs.unlinkSync(filename);
 }
 
-function sendAudio(filename, stream) {
+function sendAudio(filename, stream, callback) {
   if (filename == null) return;
   let player = sipster.createPlayer(filename, true);
   player.startTransmitTo(stream);
+  player.on('eof', () => {
+    callback();
+    deleteFile(filename);
+  });
 }

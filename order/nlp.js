@@ -33,33 +33,48 @@ const initialStreamRequest = {
 
 let mod = module.exports = {};
 
+mod.error = {
+  SILENCE: 'silence',
+  NO_INTENT: 'no_intent',
+  API_ERR: 'api_err'
+};
+
 mod.analyzeSpeech = (filename) => {
   let p = new Promise((resolve, reject) => {
-    const detectStream = sessionClient
-      .streamingDetectIntent()
-      .on('error', (err) => {
+    const detectStream = sessionClient.streamingDetectIntent();
+    detectStream.on('error', (err) => {
+      if (detectStream.writable) {
         detectStream.destroy();
-        reject(err);
-      })
-      .on('data', (data) => {
-        if (data.queryResult) {
-          console.log(data.queryResult.queryText);
-          console.log(data.queryResult.parameters);
-          detectStream.destroy();
-          if (data.queryResult.intent) {
-            resolve(data.queryResult.parameters);
+        console.log(err);
+        reject(mod.error.API_ERR);
+      }
+    });
+    detectStream.on('data', (data) => {
+      if (data.queryResult) {
+        console.log(data.queryResult.queryText);
+        console.log(data.queryResult.parameters);
+        detectStream.destroy();
+        if (data.queryResult.intent) {
+          resolve([data.queryResult.intent.displayName, data.queryResult.parameters]);
+        } else {
+          let err;
+          if (!data.queryResult.queryText) {
+            err = mod.error.SILENCE;
           } else {
-            reject();
+            err = mod.error.NO_INTENT;
           }
+          reject(err);
         }
-      });
+      }
+    });
+    let tstream = ts.createReadStream(filename, {
+      beginAt: 0,
+      detectTruncate: true,
+      onTruncate: 'end',
+      endOnError: true
+    });
     detectStream.write(initialStreamRequest);
-    pump(ts.createReadStream(filename, {
-        beginAt: 0,
-        detectTruncate: true,
-        onTruncate: 'end',
-        endOnError: true
-      }),
+    pump(tstream,
       through2.obj((obj, _, next) => {
         next(null, {
           inputAudio: obj
@@ -85,7 +100,7 @@ mod.orderToString = (order) => {
 mod.tts = (sentence) => {
   let filename = '/tmp/' + uuid() + '.wav';
   let p = new Promise((resolve) => {
-    exec('espeak "' + sentence + '" -w ' + filename).then(() => {
+    exec('./tts/mimic -t "' + sentence + '" -voice tts/ljm -o "' + filename + '"').then(() => {
       resolve(filename);
     }).catch((err) => {
       console.error(err);
