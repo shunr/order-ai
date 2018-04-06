@@ -10,6 +10,7 @@ const ts = require('tail-stream');
 const pump = require('pump');
 
 const menu = require('./menu_parser');
+const dfintent = require('./dfintent');
 
 const sessionClient = new dialogflow.SessionsClient();
 const sessionPath = sessionClient.sessionPath('order-ai', uuid());
@@ -33,12 +34,6 @@ const initialStreamRequest = {
 
 let mod = module.exports = {};
 
-mod.error = {
-  SILENCE: 'silence',
-  NO_INTENT: 'no_intent',
-  API_ERR: 'api_err'
-};
-
 mod.analyzeSpeech = (filename) => {
   let p = new Promise((resolve, reject) => {
     const detectStream = sessionClient.streamingDetectIntent();
@@ -46,7 +41,7 @@ mod.analyzeSpeech = (filename) => {
       if (detectStream.writable) {
         detectStream.destroy();
         console.log(err);
-        reject(mod.error.API_ERR);
+        reject(dfintent.error.API_ERR);
       }
     });
     detectStream.on('data', (data) => {
@@ -59,9 +54,9 @@ mod.analyzeSpeech = (filename) => {
         } else {
           let err;
           if (!data.queryResult.queryText) {
-            err = mod.error.SILENCE;
+            err = dfintent.error.SILENCE;
           } else {
-            err = mod.error.NO_INTENT;
+            err = dfintent.error.NO_INTENT;
           }
           reject(err);
         }
@@ -94,7 +89,7 @@ mod.orderToString = (order) => {
       sentence += ' and';
     }
   }
-  return sentence;
+  return (sentence.length > 0) ? sentence : 'empty';
 };
 
 mod.tts = (sentence) => {
